@@ -1,45 +1,43 @@
-package Policlinico.backend.paciente;
+package Policlinico.backend.paciente.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+public class RegistroPacienteRequest {
 
-@Entity
-@Table(name = "paciente")
-public class Paciente {
-    @Id
-    @Column(name = "numDoc", length = 12)
+    @NotBlank
+    @Size(max = 12)
     private String numDoc;
-    
-    @Column(name = "tipoDoc")
+
+    @NotBlank
+    @Size(max = 10)
     private String tipoDoc;
-    
-    @Column(name = "nombre")
+
+    @NotBlank
+    @Size(max = 100)
     private String nombre;
-    
-    @Column(name = "apellido")
+
+    @NotBlank
+    @Size(max = 100)
     private String apellido;
-    
-    @Column(name = "sexo")
+
+    @NotBlank
+    @Size(max = 1)
     private String sexo;
-    
-    @Column(name = "direccion")
+
+    @NotBlank
+    @Size(max = 150)
     private String direccion;
 
+    @NotBlank
+    @Email
+    @Size(max = 150)
+    private String correo;
 
-    public Paciente() {
-    }
-
-    public Paciente(String numDoc, String tipoDoc, String nombre, String apellido, String sexo, String direccion) {
-        this.numDoc = numDoc;
-        this.tipoDoc = tipoDoc;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.sexo = sexo;
-        this.direccion = direccion;
-    }
+    @NotBlank
+    @Size(min = 8, max = 72)
+    private String clave;
 
     public String getNumDoc() {
         return numDoc;
@@ -88,5 +86,20 @@ public class Paciente {
     public void setDireccion(String direccion) {
         this.direccion = direccion;
     }
-    
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getClave() {
+        return clave;
+    }
+
+    public void setClave(String clave) {
+        this.clave = clave;
+    }
 }

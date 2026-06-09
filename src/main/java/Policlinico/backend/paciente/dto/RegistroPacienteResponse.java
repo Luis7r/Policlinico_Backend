@@ -1,45 +1,15 @@
-package Policlinico.backend.paciente;
+package Policlinico.backend.paciente.dto;
 
+public class RegistroPacienteResponse {
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "paciente")
-public class Paciente {
-    @Id
-    @Column(name = "numDoc", length = 12)
     private String numDoc;
-    
-    @Column(name = "tipoDoc")
     private String tipoDoc;
-    
-    @Column(name = "nombre")
     private String nombre;
-    
-    @Column(name = "apellido")
     private String apellido;
-    
-    @Column(name = "sexo")
     private String sexo;
-    
-    @Column(name = "direccion")
     private String direccion;
-
-
-    public Paciente() {
-    }
-
-    public Paciente(String numDoc, String tipoDoc, String nombre, String apellido, String sexo, String direccion) {
-        this.numDoc = numDoc;
-        this.tipoDoc = tipoDoc;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.sexo = sexo;
-        this.direccion = direccion;
-    }
+    private String correo;
+    private String rol;
 
     public String getNumDoc() {
         return numDoc;
@@ -88,5 +58,20 @@ public class Paciente {
     public void setDireccion(String direccion) {
         this.direccion = direccion;
     }
-    
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
 }
