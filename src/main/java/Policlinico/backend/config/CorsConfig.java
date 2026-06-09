@@ -13,7 +13,8 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                     "http://localhost:4200",
                     "https://policlinico-fronted.vercel.app",
-                    "https://policlinico-fronted-git-main-luis7rs-projects.vercel.app"
+                    "https://policlinico-fronted-git-main-luis7rs-projects.vercel.app",
+                    "https://policlinico-fronted-p14yqdt2i-luis7rs-projects.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
