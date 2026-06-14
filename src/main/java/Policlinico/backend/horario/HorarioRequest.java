@@ -12,7 +12,6 @@ public class HorarioRequest {
     @NotBlank
     private String codMed;
 
-    @NotBlank
     private String codEncargado;
 
     public LocalDate getFecha() {

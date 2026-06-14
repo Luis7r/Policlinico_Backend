@@ -45,7 +45,9 @@ public class HorarioService {
 
     public Horario guardar(HorarioRequest request) {
         Medico medico = medicoService.buscar(request.getCodMed());
-        EncargadoCitas encargadoCitas = encargadoCitasService.buscar(request.getCodEncargado());
+        EncargadoCitas encargadoCitas = request.getCodEncargado() != null && !request.getCodEncargado().isBlank()
+                ? encargadoCitasService.buscar(request.getCodEncargado())
+                : null;
 
         Horario horario = new Horario();
         horario.setFecha(request.getFecha());

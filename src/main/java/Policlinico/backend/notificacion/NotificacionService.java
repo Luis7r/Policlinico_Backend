@@ -15,7 +15,7 @@ public class NotificacionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificacionService.class);
 
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
-    private final String remitente;
+    private final String remitente ;
 
     public NotificacionService(
             ObjectProvider<JavaMailSender> mailSenderProvider,
@@ -38,7 +38,7 @@ public class NotificacionService {
 
         try {
             SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setFrom(remitente);
+            mensaje.setFrom("Policlinico Chorrillos Salud<" + remitente + ">");
             mensaje.setTo(destinatario);
             mensaje.setSubject(asunto);
             mensaje.setText(contenido);

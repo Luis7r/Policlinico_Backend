@@ -31,6 +31,18 @@ public class DatabaseSchemaInitializer implements ApplicationRunner {
                     UNIQUE KEY uk_encargado_num_doc (numDoc)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 """);
+        ejecutar("""
+                CREATE TABLE IF NOT EXISTS solicitud_medica (
+                    idSolicitud INT NOT NULL AUTO_INCREMENT,
+                    codMed VARCHAR(12) NOT NULL,
+                    fecha DATE NOT NULL,
+                    horaInicio TIME NOT NULL,
+                    horaFin TIME NOT NULL,
+                    PRIMARY KEY (idSolicitud),
+                    CONSTRAINT fk_solicitud_medico
+                        FOREIGN KEY (codMed) REFERENCES medico (codMed)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """);
         ejecutar("ALTER TABLE paciente MODIFY numDoc VARCHAR(12) NOT NULL");
         ejecutar("ALTER TABLE medico MODIFY codMed VARCHAR(12) NOT NULL");
         ejecutar("ALTER TABLE encargado_citas MODIFY codEncargado VARCHAR(12) NOT NULL");

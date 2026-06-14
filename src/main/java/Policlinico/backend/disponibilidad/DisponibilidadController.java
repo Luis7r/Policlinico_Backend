@@ -44,6 +44,12 @@ public class DisponibilidadController {
         return disponibilidadService.guardar(request);
     }
 
+    @PostMapping("/rango")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<Disponibilidad> guardarRango(@Valid @RequestBody DisponibilidadRangoRequest request) {
+        return disponibilidadService.guardarRango(request);
+    }
+
     @DeleteMapping("/{codDis}")
     public void eliminar(@PathVariable Integer codDis) {
         disponibilidadService.eliminar(codDis);

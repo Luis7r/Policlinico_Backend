@@ -46,6 +46,17 @@ CREATE TABLE IF NOT EXISTS horario (
         FOREIGN KEY (codEncargado) REFERENCES encargado_citas (codEncargado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS solicitud_medica (
+    idSolicitud INT NOT NULL AUTO_INCREMENT,
+    codMed VARCHAR(12) NOT NULL,
+    fecha DATE NOT NULL,
+    horaInicio TIME NOT NULL,
+    horaFin TIME NOT NULL,
+    PRIMARY KEY (idSolicitud),
+    CONSTRAINT fk_solicitud_medico
+        FOREIGN KEY (codMed) REFERENCES medico (codMed)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS disponibilidad (
     codDis INT NOT NULL AUTO_INCREMENT,
     codHor INT NOT NULL,
