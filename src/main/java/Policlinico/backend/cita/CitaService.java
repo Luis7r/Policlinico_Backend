@@ -94,12 +94,12 @@ public class CitaService {
         cita.setEstado(EstadoCita.REGISTRADA);
         cita = citaRepository.save(cita);
 
-        boolean notificacionEnviada = notificacionService.enviar(
-                correo,
-                "Cita registrada",
-                mensajeCita("Su cita fue registrada correctamente.", cita));
+        notificacionService.enviarAsync(
+        correo,
+        "Cita registrada",
+        mensajeCita("Su cita fue registrada correctamente.", cita));
 
-        return toResponse(cita, correo, notificacionEnviada);
+        return toResponse(cita, correo, true);
     }
 
     @Transactional
@@ -124,12 +124,12 @@ public class CitaService {
         cita.setEstado(EstadoCita.POSTERGADA);
         cita = citaRepository.save(cita);
 
-        boolean notificacionEnviada = notificacionService.enviar(
-                correo,
-                "Cita postergada",
-                mensajeCita("Su cita fue postergada. Estos son los nuevos datos:", cita));
+        notificacionService.enviarAsync(
+        correo,
+        "Cita postergada",
+        mensajeCita("Su cita fue postergada. Estos son los nuevos datos:", cita));
 
-        return toResponse(cita, correo, notificacionEnviada);
+        return toResponse(cita, correo, true);
     }
 
     @Transactional
@@ -144,12 +144,12 @@ public class CitaService {
         cita.setEstado(EstadoCita.CANCELADA);
         cita = citaRepository.save(cita);
 
-        boolean notificacionEnviada = notificacionService.enviar(
-                correo,
-                "Cita cancelada",
-                mensajeCita("Su cita fue cancelada.", cita));
+        notificacionService.enviarAsync(
+        correo,
+        "Cita cancelada",
+        mensajeCita("Su cita fue cancelada.", cita));
 
-        return toResponse(cita, correo, notificacionEnviada);
+        return toResponse(cita, correo, true);
     }
 
     @Transactional
