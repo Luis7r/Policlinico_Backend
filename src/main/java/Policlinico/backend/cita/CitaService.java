@@ -16,6 +16,7 @@ import Policlinico.backend.usuario.UsuarioRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 @Service
 public class CitaService {
@@ -109,6 +110,8 @@ public class CitaService {
             throw new IllegalArgumentException("No se puede postergar una cita cancelada");
         }
 
+        validarAnticipacion(cita);
+
         String correo = correoRegistrado(cita.getPaciente());
         Disponibilidad anterior = cita.getDisponibilidad();
         Disponibilidad nueva = disponibilidadService.buscar(request.getNuevoCodDis());
@@ -136,8 +139,10 @@ public class CitaService {
     public CitaResponse cancelar(Integer codCita) {
         Cita cita = buscarCita(codCita);
         if (cita.getEstado() == EstadoCita.CANCELADA) {
-            throw new IllegalArgumentException("La cita ya fue cancelada");
+             throw new IllegalArgumentException("La cita ya fue cancelada");
         }
+
+        validarAnticipacion(cita);
 
         String correo = correoRegistrado(cita.getPaciente());
         cita.getDisponibilidad().setEstado(EstadoDisponibilidad.DISPONIBLE);
@@ -176,6 +181,18 @@ public class CitaService {
             throw new IllegalArgumentException("La disponibilidad seleccionada no esta disponible");
         }
     }
+    
+    private void validarAnticipacion(Cita cita) {
+
+    LocalDateTime fechaHoraCita = LocalDateTime.of(
+            cita.getDisponibilidad().getHorario().getFecha(),
+            cita.getDisponibilidad().getHoraInicio());
+
+    if (LocalDateTime.now().isAfter(fechaHoraCita.minusHours(24))) {
+        throw new IllegalArgumentException(
+                "Solo puede modificar o cancelar una cita con al menos 24 horas de anticipación.");
+    }
+}
 
     private String correoRegistrado(Paciente paciente) {
         Usuario usuario = usuarioRepository.findByPaciente_NumDoc(paciente.getNumDoc())
@@ -234,4 +251,6 @@ public class CitaService {
         response.setNotificacionEnviada(notificacionEnviada);
         return response;
     }
+    
+    
 }
