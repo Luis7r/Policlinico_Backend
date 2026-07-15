@@ -7,7 +7,8 @@ public enum EstadoCita {
     REGISTRADA,
     POSTERGADA,
     CANCELADA,
-    ATENDIDA;
+    ATENDIDA,
+    AUSENTE;
 
     @JsonCreator
     public static EstadoCita fromValue(String value) {
@@ -22,6 +23,7 @@ public enum EstadoCita {
             case "POSTERGADO" -> POSTERGADA;
             case "CANCELADO" -> CANCELADA;
             case "ATENDIDO" -> ATENDIDA;
+            case "NO_ASISTIO" -> AUSENTE;
             default -> EstadoCita.valueOf(normalized);
         };
     }

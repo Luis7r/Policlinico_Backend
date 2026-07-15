@@ -16,6 +16,7 @@ public class EstadoCitaConverter implements AttributeConverter<EstadoCita, Strin
             case POSTERGADA -> "reprogramado";
             case CANCELADA -> "cancelado";
             case ATENDIDA -> "atendido";
+            case AUSENTE -> "ausente";
         };
     }
 

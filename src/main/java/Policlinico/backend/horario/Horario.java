@@ -33,6 +33,9 @@ public class Horario {
     @JoinColumn(name = "codEncargado", referencedColumnName = "codEncargado")
     private EncargadoCitas encargadoCitas;
 
+    @Column(name = "consultorio", length = 50)
+    private String consultorio;
+
     public Integer getCodHor() {
         return codHor;
     }
@@ -63,5 +66,13 @@ public class Horario {
 
     public void setEncargadoCitas(EncargadoCitas encargadoCitas) {
         this.encargadoCitas = encargadoCitas;
+    }
+
+    public String getConsultorio() {
+        return consultorio;
+    }
+
+    public void setConsultorio(String consultorio) {
+        this.consultorio = consultorio;
     }
 }

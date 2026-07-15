@@ -1,12 +1,13 @@
 package Policlinico.backend.disponibilidad;
 
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class DisponibilidadRangoRequest {
+public class DisponibilidadDiaRequest {
 
     @NotNull
-    private Integer codHor;
+    private LocalDate fecha;
 
     @NotNull
     private LocalTime horaInicio;
@@ -14,14 +15,12 @@ public class DisponibilidadRangoRequest {
     @NotNull
     private LocalTime horaFin;
 
-    private Integer duracionMinutos;
-
-    public Integer getCodHor() {
-        return codHor;
+    public LocalDate getFecha() {
+        return fecha;
     }
 
-    public void setCodHor(Integer codHor) {
-        this.codHor = codHor;
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
     }
 
     public LocalTime getHoraInicio() {
@@ -38,13 +37,5 @@ public class DisponibilidadRangoRequest {
 
     public void setHoraFin(LocalTime horaFin) {
         this.horaFin = horaFin;
-    }
-
-    public Integer getDuracionMinutos() {
-        return duracionMinutos;
-    }
-
-    public void setDuracionMinutos(Integer duracionMinutos) {
-        this.duracionMinutos = duracionMinutos;
     }
 }

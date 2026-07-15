@@ -2,6 +2,7 @@ package Policlinico.backend.solicitud;
 
 import Policlinico.backend.medico.Medico;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,10 @@ public class SolicitudMedica {
 
     @Column(name = "horaFin", nullable = false)
     private LocalTime horaFin;
+
+    @Convert(converter = EstadoSolicitudMedicaConverter.class)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EstadoSolicitudMedica estado = EstadoSolicitudMedica.PENDIENTE;
 
     public Integer getIdSolicitud() {
         return idSolicitud;
@@ -73,5 +78,13 @@ public class SolicitudMedica {
 
     public void setHoraFin(LocalTime horaFin) {
         this.horaFin = horaFin;
+    }
+
+    public EstadoSolicitudMedica getEstado() {
+        return estado != null ? estado : EstadoSolicitudMedica.PENDIENTE;
+    }
+
+    public void setEstado(EstadoSolicitudMedica estado) {
+        this.estado = estado;
     }
 }

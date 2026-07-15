@@ -14,6 +14,8 @@ public class HorarioRequest {
 
     private String codEncargado;
 
+    private String consultorio;
+
     public LocalDate getFecha() {
         return fecha;
     }
@@ -36,5 +38,13 @@ public class HorarioRequest {
 
     public void setCodEncargado(String codEncargado) {
         this.codEncargado = codEncargado;
+    }
+
+    public String getConsultorio() {
+        return consultorio;
+    }
+
+    public void setConsultorio(String consultorio) {
+        this.consultorio = consultorio;
     }
 }

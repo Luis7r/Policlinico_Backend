@@ -1,5 +1,6 @@
 package Policlinico.backend.especialidad;
 
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,9 @@ public class EspecialidadService {
     public Especialidad guardar(Especialidad especialidad) {
         if (especialidadRepository.existsByNombre(especialidad.getNombre())) {
             throw new IllegalArgumentException("Ya existe una especialidad con ese nombre");
+        }
+        if (especialidad.getPrecio() == null) {
+            especialidad.setPrecio(BigDecimal.valueOf(60));
         }
         return especialidadRepository.save(especialidad);
     }

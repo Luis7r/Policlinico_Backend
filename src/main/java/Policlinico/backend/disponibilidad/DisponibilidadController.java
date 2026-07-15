@@ -29,8 +29,11 @@ public class DisponibilidadController {
     public List<Disponibilidad> listar(
             @RequestParam(required = false) EstadoDisponibilidad estado,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(required = false, defaultValue = "false") boolean incluirPasadas,
             @RequestParam(required = false) String codMed) {
-        return disponibilidadService.listar(estado, fecha, codMed);
+        return disponibilidadService.listar(estado, fecha, fechaInicio, fechaFin, incluirPasadas, codMed);
     }
 
     @GetMapping("/{codDis}")
@@ -48,6 +51,12 @@ public class DisponibilidadController {
     @ResponseStatus(HttpStatus.CREATED)
     public List<Disponibilidad> guardarRango(@Valid @RequestBody DisponibilidadRangoRequest request) {
         return disponibilidadService.guardarRango(request);
+    }
+
+    @PostMapping("/masivo")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<Disponibilidad> guardarMasivo(@Valid @RequestBody DisponibilidadMasivaRequest request) {
+        return disponibilidadService.guardarMasivo(request);
     }
 
     @DeleteMapping("/{codDis}")

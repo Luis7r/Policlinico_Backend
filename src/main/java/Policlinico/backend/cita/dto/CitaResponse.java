@@ -1,5 +1,6 @@
 package Policlinico.backend.cita.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -17,6 +18,8 @@ public class CitaResponse {
     private String codMed;
     private String medico;
     private String especialidad;
+    private BigDecimal precioEspecialidad;
+    private String consultorio;
     private Boolean notificacionEnviada;
 
     public Integer getCodCita() {
@@ -113,6 +116,22 @@ public class CitaResponse {
 
     public void setEspecialidad(String especialidad) {
         this.especialidad = especialidad;
+    }
+
+    public BigDecimal getPrecioEspecialidad() {
+        return precioEspecialidad;
+    }
+
+    public void setPrecioEspecialidad(BigDecimal precioEspecialidad) {
+        this.precioEspecialidad = precioEspecialidad;
+    }
+
+    public String getConsultorio() {
+        return consultorio;
+    }
+
+    public void setConsultorio(String consultorio) {
+        this.consultorio = consultorio;
     }
 
     public Boolean getNotificacionEnviada() {

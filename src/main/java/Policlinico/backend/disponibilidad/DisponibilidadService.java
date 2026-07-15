@@ -1,11 +1,15 @@
 package Policlinico.backend.disponibilidad;
 
 import Policlinico.backend.horario.Horario;
+import Policlinico.backend.horario.HorarioRequest;
 import Policlinico.backend.horario.HorarioService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +27,9 @@ public class DisponibilidadService {
     public List<Disponibilidad> listar(
             EstadoDisponibilidad estado,
             LocalDate fecha,
+            LocalDate fechaInicio,
+            LocalDate fechaFin,
+            boolean incluirPasadas,
             String codMed) {
 
         List<Disponibilidad> resultado;
@@ -64,7 +71,9 @@ public class DisponibilidadService {
             resultado = disponibilidadRepository.findAll();
         }
 
-        return filtrarDisponibilidades(resultado, fecha);
+        resultado = filtrarPorRango(resultado, fechaInicio, fechaFin);
+
+        return incluirPasadas ? resultado : filtrarDisponibilidades(resultado, fecha);
     }
 
     public Disponibilidad buscar(Integer codDis) {
@@ -100,35 +109,46 @@ public class DisponibilidadService {
 
         Horario horario = horarioService.buscar(request.getCodHor());
 
-        LocalTime inicio = request.getHoraInicio();
-        LocalTime fin = request.getHoraFin();
-
-        List<Disponibilidad> creadas = new ArrayList<>();
-
-        while (!inicio.plusMinutes(30).isAfter(fin)) {
-
-            LocalTime bloqueFin = inicio.plusMinutes(30);
-
-            if (!disponibilidadRepository.existsByHorario_CodHorAndHoraInicioAndHoraFin(
-                    horario.getCodHor(),
-                    inicio,
-                    bloqueFin)) {
-
-                Disponibilidad disponibilidad = new Disponibilidad();
-                disponibilidad.setHorario(horario);
-                disponibilidad.setHoraInicio(inicio);
-                disponibilidad.setHoraFin(bloqueFin);
-                disponibilidad.setEstado(EstadoDisponibilidad.DISPONIBLE);
-
-                creadas.add(disponibilidadRepository.save(disponibilidad));
-            }
-
-            inicio = bloqueFin;
-        }
+        List<Disponibilidad> creadas = guardarBloques(
+                horario,
+                request.getHoraInicio(),
+                request.getHoraFin(),
+                duracionMinutos(request.getDuracionMinutos()));
 
         if (creadas.isEmpty()) {
             throw new IllegalArgumentException(
                     "No se generaron bloques nuevos. Revise el rango o duplicados existentes");
+        }
+
+        return creadas;
+    }
+
+    public List<Disponibilidad> guardarMasivo(DisponibilidadMasivaRequest request) {
+        validarRangoFechas(request.getFechaInicio(), request.getFechaFin());
+
+        List<Disponibilidad> creadas = new ArrayList<>();
+        Map<LocalDate, DisponibilidadDiaRequest> dias = mapearDias(request.getDias());
+        int duracionMinutos = duracionMinutos(request.getDuracionMinutos());
+
+        for (LocalDate fecha = request.getFechaInicio(); !fecha.isAfter(request.getFechaFin()); fecha = fecha.plusDays(1)) {
+            LocalTime horaInicio = request.getMismaHora() ? request.getHoraInicio() : obtenerDia(dias, fecha).getHoraInicio();
+            LocalTime horaFin = request.getMismaHora() ? request.getHoraFin() : obtenerDia(dias, fecha).getHoraFin();
+
+            validarHoras(horaInicio, horaFin);
+
+            HorarioRequest horarioRequest = new HorarioRequest();
+            horarioRequest.setFecha(fecha);
+            horarioRequest.setCodMed(request.getCodMed());
+            horarioRequest.setCodEncargado(request.getCodEncargado());
+            horarioRequest.setConsultorio(request.getConsultorio());
+
+            Horario horario = horarioService.guardar(horarioRequest);
+            creadas.addAll(guardarBloques(horario, horaInicio, horaFin, duracionMinutos));
+        }
+
+        if (creadas.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No se generaron disponibilidades. Revise las fechas, horas o duplicados existentes");
         }
 
         return creadas;
@@ -194,4 +214,92 @@ public class DisponibilidadService {
                 .toList();
     }
 
+    private List<Disponibilidad> guardarBloques(
+            Horario horario,
+            LocalTime horaInicio,
+            LocalTime horaFin,
+            int duracionMinutos) {
+        validarHoras(horaInicio, horaFin);
+
+        LocalTime inicio = horaInicio;
+        List<Disponibilidad> creadas = new ArrayList<>();
+
+        while (!inicio.plusMinutes(duracionMinutos).isAfter(horaFin)) {
+            LocalTime bloqueFin = inicio.plusMinutes(duracionMinutos);
+
+            if (!disponibilidadRepository.existsByHorario_CodHorAndHoraInicioAndHoraFin(
+                    horario.getCodHor(),
+                    inicio,
+                    bloqueFin)) {
+
+                Disponibilidad disponibilidad = new Disponibilidad();
+                disponibilidad.setHorario(horario);
+                disponibilidad.setHoraInicio(inicio);
+                disponibilidad.setHoraFin(bloqueFin);
+                disponibilidad.setEstado(EstadoDisponibilidad.DISPONIBLE);
+
+                creadas.add(disponibilidadRepository.save(disponibilidad));
+            }
+
+            inicio = bloqueFin;
+        }
+
+        return creadas;
+    }
+
+    private void validarRangoFechas(LocalDate fechaInicio, LocalDate fechaFin) {
+        if (fechaInicio.isAfter(fechaFin)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser menor o igual a la fecha de fin");
+        }
+    }
+
+    private List<Disponibilidad> filtrarPorRango(
+            List<Disponibilidad> disponibilidades,
+            LocalDate fechaInicio,
+            LocalDate fechaFin) {
+        if (fechaInicio == null && fechaFin == null) {
+            return disponibilidades;
+        }
+        LocalDate inicio = fechaInicio != null ? fechaInicio : fechaFin;
+        LocalDate fin = fechaFin != null ? fechaFin : fechaInicio;
+        validarRangoFechas(inicio, fin);
+        return disponibilidades.stream()
+                .filter(disponibilidad -> {
+                    LocalDate fecha = disponibilidad.getHorario().getFecha();
+                    return !fecha.isBefore(inicio) && !fecha.isAfter(fin);
+                })
+                .toList();
+    }
+
+    private void validarHoras(LocalTime horaInicio, LocalTime horaFin) {
+        if (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin)) {
+            throw new IllegalArgumentException("La hora de inicio debe ser menor a la hora de fin");
+        }
+    }
+
+    private int duracionMinutos(Integer duracionMinutos) {
+        if (duracionMinutos == null) {
+            return 30;
+        }
+        if (duracionMinutos < 5 || duracionMinutos > 240) {
+            throw new IllegalArgumentException("La duracion de la cita debe estar entre 5 y 240 minutos");
+        }
+        return duracionMinutos;
+    }
+
+    private Map<LocalDate, DisponibilidadDiaRequest> mapearDias(List<DisponibilidadDiaRequest> dias) {
+        if (dias == null) {
+            return Map.of();
+        }
+        return dias.stream()
+                .collect(Collectors.toMap(DisponibilidadDiaRequest::getFecha, Function.identity(), (actual, repetido) -> actual));
+    }
+
+    private DisponibilidadDiaRequest obtenerDia(Map<LocalDate, DisponibilidadDiaRequest> dias, LocalDate fecha) {
+        DisponibilidadDiaRequest dia = dias.get(fecha);
+        if (dia == null) {
+            throw new IllegalArgumentException("Debe indicar el rango horario para la fecha " + fecha);
+        }
+        return dia;
+    }
 }

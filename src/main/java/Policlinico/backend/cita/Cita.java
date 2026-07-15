@@ -34,6 +34,9 @@ public class Cita {
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoCita estado = EstadoCita.REGISTRADA;
 
+    @Column(name = "consultorio", length = 50)
+    private String consultorio;
+
     public Integer getCodCita() {
         return codCita;
     }
@@ -64,5 +67,13 @@ public class Cita {
 
     public void setEstado(EstadoCita estado) {
         this.estado = estado;
+    }
+
+    public String getConsultorio() {
+        return consultorio;
+    }
+
+    public void setConsultorio(String consultorio) {
+        this.consultorio = consultorio;
     }
 }

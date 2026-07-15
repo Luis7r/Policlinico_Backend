@@ -69,7 +69,8 @@ public class CitaService {
     @Transactional(readOnly = true)
     public List<CitaResponse> listarHistorialMedico(String codMed) {
         return citaRepository
-                .findByDisponibilidad_Horario_Medico_CodMedAndEstado(CodigoIdentidad.medico(codMed), EstadoCita.ATENDIDA)
+                .findByDisponibilidad_Horario_Medico_CodMedAndEstadoIn(
+                        CodigoIdentidad.medico(codMed), List.of(EstadoCita.ATENDIDA, EstadoCita.AUSENTE))
                 .stream()
                 .map(cita -> toResponse(cita, correoRegistradoOpcional(cita.getPaciente()), null))
                 .toList();
@@ -86,6 +87,7 @@ public class CitaService {
 
         Disponibilidad disponibilidad = disponibilidadService.buscar(request.getCodDis());
         validarDisponible(disponibilidad);
+        validarSinCrucePaciente(paciente, disponibilidad, null);
 
         disponibilidad.setEstado(EstadoDisponibilidad.RESERVADO);
 
@@ -93,6 +95,7 @@ public class CitaService {
         cita.setPaciente(paciente);
         cita.setDisponibilidad(disponibilidad);
         cita.setEstado(EstadoCita.REGISTRADA);
+        cita.setConsultorio(disponibilidad.getHorario().getConsultorio());
         cita = citaRepository.save(cita);
 
         notificacionService.enviarAsync(
@@ -120,11 +123,13 @@ public class CitaService {
         }
 
         validarDisponible(nueva);
+        validarSinCrucePaciente(cita.getPaciente(), nueva, cita.getCodCita());
         anterior.setEstado(EstadoDisponibilidad.DISPONIBLE);
         nueva.setEstado(EstadoDisponibilidad.RESERVADO);
 
         cita.setDisponibilidad(nueva);
         cita.setEstado(EstadoCita.POSTERGADA);
+        cita.setConsultorio(nueva.getHorario().getConsultorio());
         cita = citaRepository.save(cita);
 
         notificacionService.enviarAsync(
@@ -136,7 +141,7 @@ public class CitaService {
     }
 
     @Transactional
-    public CitaResponse cancelar(Integer codCita) {
+    public CitaResponse cancelar(Integer codCita, String motivo) {
         Cita cita = buscarCita(codCita);
         if (cita.getEstado() == EstadoCita.CANCELADA) {
              throw new IllegalArgumentException("La cita ya fue cancelada");
@@ -152,7 +157,7 @@ public class CitaService {
         notificacionService.enviarAsync(
         correo,
         "Cita cancelada",
-        mensajeCita("Su cita fue cancelada.", cita));
+        mensajeCita("Su cita fue cancelada.", cita) + mensajeMotivoCancelacion(motivo));
 
         return toResponse(cita, correo, true);
     }
@@ -171,6 +176,20 @@ public class CitaService {
         return toResponse(cita, correoRegistradoOpcional(cita.getPaciente()), null);
     }
 
+    @Transactional
+    public CitaResponse marcarAusente(Integer codCita) {
+        Cita cita = buscarCita(codCita);
+        if (cita.getEstado() == EstadoCita.CANCELADA) {
+            throw new IllegalArgumentException("No se puede marcar como ausente una cita cancelada");
+        }
+        if (cita.getEstado() == EstadoCita.ATENDIDA) {
+            throw new IllegalArgumentException("No se puede marcar como ausente una cita atendida");
+        }
+        cita.setEstado(EstadoCita.AUSENTE);
+        cita = citaRepository.save(cita);
+        return toResponse(cita, correoRegistradoOpcional(cita.getPaciente()), null);
+    }
+
     private Cita buscarCita(Integer codCita) {
         return citaRepository.findById(codCita)
                 .orElseThrow(() -> new IllegalArgumentException("No existe la cita"));
@@ -179,6 +198,20 @@ public class CitaService {
     private void validarDisponible(Disponibilidad disponibilidad) {
         if (disponibilidad.getEstado() != EstadoDisponibilidad.DISPONIBLE) {
             throw new IllegalArgumentException("La disponibilidad seleccionada no esta disponible");
+        }
+    }
+
+    private void validarSinCrucePaciente(Paciente paciente, Disponibilidad disponibilidad, Integer codCitaExcluir) {
+        long cruces = citaRepository.contarCrucesHorarioPaciente(
+                paciente.getNumDoc(),
+                disponibilidad.getHorario().getFecha(),
+                disponibilidad.getHoraInicio(),
+                disponibilidad.getHoraFin(),
+                List.of(EstadoCita.REGISTRADA, EstadoCita.POSTERGADA),
+                codCitaExcluir);
+        if (cruces > 0) {
+            throw new IllegalArgumentException(
+                    "El paciente ya tiene una cita registrada o postergada en esa fecha y horario");
         }
     }
     
@@ -217,6 +250,7 @@ public class CitaService {
                 Hora: %s - %s
                 Medico: %s %s
                 Especialidad: %s
+                Consultorio: %s
                 Estado: %s
                 """.formatted(
                 encabezado,
@@ -228,7 +262,15 @@ public class CitaService {
                 medico.getNombre(),
                 medico.getApellido(),
                 medico.getEspecialidad().getNombre(),
+                cita.getConsultorio() != null ? cita.getConsultorio() : "-",
                 cita.getEstado().name());
+    }
+
+    private String mensajeMotivoCancelacion(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            return "";
+        }
+        return "\nMotivo de cancelacion: " + motivo.trim() + "\n";
     }
 
     private CitaResponse toResponse(Cita cita, String correo, Boolean notificacionEnviada) {
@@ -248,6 +290,8 @@ public class CitaService {
         response.setCodMed(medico.getCodMed());
         response.setMedico(medico.getNombre() + " " + medico.getApellido());
         response.setEspecialidad(medico.getEspecialidad().getNombre());
+        response.setPrecioEspecialidad(medico.getEspecialidad().getPrecio());
+        response.setConsultorio(cita.getConsultorio());
         response.setNotificacionEnviada(notificacionEnviada);
         return response;
     }

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS paciente (
 CREATE TABLE IF NOT EXISTS especialidad (
     codEspe INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
+    precio DECIMAL(10,2) NULL DEFAULT 60.00,
     PRIMARY KEY (codEspe),
     UNIQUE KEY uk_especialidad_nombre (nombre)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS horario (
     fecha DATE NOT NULL,
     dniMed VARCHAR(12) NOT NULL,
     codEncargado VARCHAR(12) NULL,
+    consultorio VARCHAR(50) NULL,
     PRIMARY KEY (codHor),
     CONSTRAINT fk_horario_medico
         FOREIGN KEY (dniMed) REFERENCES medico (codMed),
@@ -52,6 +54,7 @@ CREATE TABLE IF NOT EXISTS solicitud_medica (
     fecha DATE NOT NULL,
     horaInicio TIME NOT NULL,
     horaFin TIME NOT NULL,
+    estado ENUM('pendientes', 'aceptado', 'rechazado') NOT NULL DEFAULT 'pendientes',
     PRIMARY KEY (idSolicitud),
     CONSTRAINT fk_solicitud_medico
         FOREIGN KEY (codMed) REFERENCES medico (codMed)
@@ -94,7 +97,8 @@ CREATE TABLE IF NOT EXISTS cita (
     codCita INT NOT NULL AUTO_INCREMENT,
     numDoc VARCHAR(12) NOT NULL,
     codDis INT NOT NULL,
-    estado ENUM('pendiente', 'reprogramado', 'cancelado', 'atendido') NOT NULL DEFAULT 'pendiente',
+    estado ENUM('pendiente', 'reprogramado', 'cancelado', 'atendido', 'ausente') NOT NULL DEFAULT 'pendiente',
+    consultorio VARCHAR(50) NULL,
     PRIMARY KEY (codCita),
     CONSTRAINT fk_cita_paciente
         FOREIGN KEY (numDoc) REFERENCES paciente (numDoc),

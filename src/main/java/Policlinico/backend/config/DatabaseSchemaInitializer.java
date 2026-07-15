@@ -53,11 +53,17 @@ public class DatabaseSchemaInitializer implements ApplicationRunner {
         agregarColumnaSiNoExiste("usuarios", "codMed", "VARCHAR(12) NULL");
         agregarColumnaSiNoExiste("usuarios", "codEncargado", "VARCHAR(12) NULL");
         agregarColumnaSiNoExiste("horario", "codEncargado", "VARCHAR(12) NULL");
+        agregarColumnaSiNoExiste("horario", "consultorio", "VARCHAR(50) NULL");
+        agregarColumnaSiNoExiste("cita", "consultorio", "VARCHAR(50) NULL");
+        agregarColumnaSiNoExiste("especialidad", "precio", "DECIMAL(10,2) NULL DEFAULT 60.00");
+        agregarColumnaSiNoExiste("solicitud_medica", "estado", "ENUM('pendientes','aceptado','rechazado') NOT NULL DEFAULT 'pendientes'");
         ejecutar("ALTER TABLE usuarios MODIFY rol ENUM('PACIENTE','MEDICO','ENCARGADO_CITAS','ADMIN')");
         ejecutar("ALTER TABLE usuarios MODIFY correo VARCHAR(150) NOT NULL");
         ejecutar("ALTER TABLE usuarios MODIFY clave_hash VARCHAR(100) NOT NULL");
         ejecutar("ALTER TABLE disponibilidad MODIFY estado ENUM('disponible','reservado','no_disponible') DEFAULT 'disponible'");
-        ejecutar("ALTER TABLE cita MODIFY estado ENUM('pendiente','reprogramado','cancelado','atendido') DEFAULT 'pendiente'");
+        ejecutar("ALTER TABLE cita MODIFY estado ENUM('pendiente','reprogramado','cancelado','atendido','ausente') DEFAULT 'pendiente'");
+        ejecutar("UPDATE solicitud_medica SET estado = 'pendientes' WHERE estado IS NULL");
+        ejecutar("ALTER TABLE solicitud_medica MODIFY estado ENUM('pendientes','aceptado','rechazado') NOT NULL DEFAULT 'pendientes'");
         ejecutar("SET FOREIGN_KEY_CHECKS=1");
     }
 

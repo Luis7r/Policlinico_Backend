@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "especialidad")
@@ -18,6 +19,9 @@ public class Especialidad {
 
     @Column(name = "nombre", nullable = false, unique = true, length = 100)
     private String nombre;
+
+    @Column(name = "precio", precision = 10, scale = 2)
+    private BigDecimal precio = BigDecimal.valueOf(60);
 
     public Integer getCodEspe() {
         return codEspe;
@@ -33,5 +37,13 @@ public class Especialidad {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(BigDecimal precio) {
+        this.precio = precio;
     }
 }

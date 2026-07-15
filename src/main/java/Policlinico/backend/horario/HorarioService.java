@@ -53,6 +53,7 @@ public class HorarioService {
         horario.setFecha(request.getFecha());
         horario.setMedico(medico);
         horario.setEncargadoCitas(encargadoCitas);
+        horario.setConsultorio(normalizarTexto(request.getConsultorio()));
         return horarioRepository.save(horario);
     }
 
@@ -61,5 +62,12 @@ public class HorarioService {
             throw new IllegalArgumentException("No existe el horario");
         }
         horarioRepository.deleteById(codHor);
+    }
+
+    private String normalizarTexto(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        return valor.trim();
     }
 }
